@@ -16,6 +16,7 @@ class Vartotojas():
 
 class Administratorius(Vartotojas):
     def __init__(self, name, last_name, email):
-        super().__init__(name, last_name)
+        super().__init__(name, last_name, email)
 
     def suteikti_teises_vartotojui(self):
+

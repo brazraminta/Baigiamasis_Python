@@ -4,21 +4,21 @@ import psycopg2
 import pandas as pd
 import logging
 
-logger = logging.getLogger(__name__)
-
-c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('../pythonProject/file.log')
-
-c_handler.setLevel(logging.INFO)
-f_handler.setLevel(logging.INFO)
-
-c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-c_handler.setFormatter(c_format)
-f_handler.setFormatter(f_format)
-
-logger.addHandler(c_handler)
-logger.addHandler(f_handler)
+# logger = logging.getLogger(__name__)
+#
+# c_handler = logging.StreamHandler()
+# f_handler = logging.FileHandler('../pythonProject/file.log')
+#
+# c_handler.setLevel(logging.INFO)
+# f_handler.setLevel(logging.INFO)
+#
+# c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+# f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# c_handler.setFormatter(c_format)
+# f_handler.setFormatter(f_format)
+#
+# logger.addHandler(c_handler)
+# logger.addHandler(f_handler)
 
 db_params = {
     "host": "localhost",
@@ -28,7 +28,7 @@ db_params = {
     "port": "5432"
 }
 
-logger.info('Script started')
+# logger.info('Script started')
 
 def delete_table(conn_params):
     connection = psycopg2.connect(**conn_params)
@@ -46,7 +46,7 @@ def create_table(conn_params):
     try:
         connection = psycopg2.connect(**conn_params)
         cursor = connection.cursor()
-        logger.info('Connecting to the database...')
+        # logger.info('Connecting to the database...')
 
         create_query1 = """
             CREATE TABLE IF NOT EXISTS books(
@@ -72,16 +72,17 @@ def create_table(conn_params):
         """
 
         cursor.execute(create_query1)
-        logger.info('Creating table books')
+        # logger.info('Creating table books')
         cursor.execute(create_query2)
-        logger.info('Creating table readers')
+        # logger.info('Creating table readers')
         print("Tables created successfuly")
 
         connection.commit()
         cursor.close()
         connection.close()
     except Exception as e:
-        logger.error("Failed to create tables", exc_info=True)
+        # logger.error("Failed to create tables", exc_info=True)
+        print(f"Error: {e}")
 
 create_table(db_params)
 
