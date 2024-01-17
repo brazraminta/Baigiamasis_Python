@@ -6,26 +6,34 @@ class RegistrationForm(QDialog):
     def __init__(self):
         super(RegistrationForm, self).__init__()
 
-        self.setWindowTitle("User Registration")
+        self.setWindowTitle("User Registration Form")
         self.setGeometry(100, 100, 300, 400)
 
         # new group box
         self.formGroupBox = QGroupBox("Registration Form")
 
-        # create the line edit
-        self.lineEditUsername = QLineEdit()
+        # create the line edit for registration data
+        self.lineEditEmail = QLineEdit()
+        self.lineEditEmail.setStyleSheet("background-color: white;")
 
         self.lineEditPassword = QLineEdit()
-        self.lineEditPassword.setEchoMode(QLineEdit.Password)
+        self.lineEditPassword.setEchoMode(QLineEdit.Password)  # papildomai sukurti 'confirm password' laukelius
+        self.lineEditPassword.setStyleSheet("background-color: white;")
 
         self.lineEditName = QLineEdit()
+        self.lineEditName.setStyleSheet("background-color: white;")
         self.lineEditSurname = QLineEdit()
+        self.lineEditSurname.setStyleSheet("background-color: white;")
         self.lineEditBirthDate = QLineEdit()
+        self.lineEditBirthDate.setStyleSheet("background-color: white;")
 
         self.radioButtonGenderFemale = QRadioButton("Female")
         self.radioButtonGenderMale = QRadioButton("Male")
 
-        self.lineEditEmail = QLineEdit()
+        self.checkBoxTaisykles = QCheckBox()
+
+        # self.confirm_button = QPushButton("Register")
+        # self.confirm_button.clicked.connect(self.register)
 
         # # a new combo box for user category
         # self.comboBoxCategory = QComboBox()
@@ -52,16 +60,19 @@ class RegistrationForm(QDialog):
 
         self.setLayout(layoutMain)
 
-    # getting the info method which is called when the form gets accepted
+    # getting the user info (method which is called when the form gets accepted)
     def getInfo(self):
         # print the information on the form
-        print("Username: {0}".format(self.lineEditUsername.text()))
-        gender = "Female" if self.radioButtonGenderFemale.isChecked() else "Male"
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle("User Inforamtion")
+
+        print("Informacija apie vartotoja: ")
+        print("Username (email): {0}".format(self.lineEditEmail.text()))
         print("Name: {0}".format(self.lineEditName.text()))
         print("Surname: {0}".format(self.lineEditSurname.text()))
         print("Birth Date: {0}".format(self.lineEditBirthDate.text()))
+        gender = "Female" if self.radioButtonGenderFemale.isChecked() else "Male"
         print("Gender: {0}".format(gender))
-        print("Email: {0}".format(self.lineEditEmail.text()))
 
         self.close()
 
@@ -81,7 +92,17 @@ class RegistrationForm(QDialog):
         layout.addRow(QLabel("Birth Date (YYYY-MM-DD)"), self.lineEditBirthDate)
         layout.addRow(QLabel("Email"), self.lineEditEmail)
 
+        layout.addRow(QLabel(f"Su naudojimosi \ntaisyklemis bei \nprivatumo politika \nsusipazinau"), self.checkBoxTaisykles)
+        self.checkBoxTaisykles.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        # self.checkBoxTaisykles.setStyleSheet("background-color: lightgreen;")
+
+        # sukurti mygtuka "Uzregistruoti"
+
         self.formGroupBox.setLayout(layout)
+        self.formGroupBox.setStyleSheet("background-color: lightgreen;")
+
+    # def register(self):
+
 
 
 

@@ -62,7 +62,7 @@ def create_table(conn_params):
 
         create_query2 = """
             CREATE TABLE IF NOT EXISTS readers(
-                id VARCHAR(255),
+                id SERIAL PRIMARY KEY,
                 reader_name VARCHAR(255),
                 reader_last_name VARCHAR(255),
                 reader_category VARCHAR(255),
@@ -71,6 +71,14 @@ def create_table(conn_params):
                 gender VARCHAR(255))
         """
 
+        # create_query3 = """
+        #     CREATE TABLE IF NOT EXISTS order_details(
+        #         id SERIAL PRIMARY KEY,
+        #
+        #     )
+        #
+        
+        
         cursor.execute(create_query1)
         # logger.info('Creating table books')
         cursor.execute(create_query2)
