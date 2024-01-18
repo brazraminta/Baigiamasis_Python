@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+import csv
 import psycopg2
 import pandas as pd
 import logging
@@ -29,141 +30,119 @@ db_params = {
 }
 
 # logger.info('Script started')
-
-def delete_table(conn_params):
-    connection = psycopg2.connect(**conn_params)
-    cursor = connection.cursor()
-    delete_query = """
-        DROP TABLE if EXISTS books, readers
-    """
-    cursor.execute(delete_query)
-    print("Tables deleted successfuly")
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-def create_table(conn_params):
-    try:
-        connection = psycopg2.connect(**conn_params)
-        cursor = connection.cursor()
-        # logger.info('Connecting to the database...')
-
-        create_query1 = """
-            CREATE TABLE IF NOT EXISTS books(
-                id SERIAL PRIMARY KEY,
-                author_name VARCHAR(255),
-                author_last_name VARCHAR(255),
-                book_title VARCHAR(255),
-                publish_date DATE,
-                ISBN VARCHAR(255),
-                genre VARCHAR(255))
-        """
-
-
-        create_query2 = """
-            CREATE TABLE IF NOT EXISTS readers(
-                id SERIAL PRIMARY KEY,
-                reader_name VARCHAR(255),
-                reader_last_name VARCHAR(255),
-                reader_category VARCHAR(255),
-                birth_date DATE,
-                reader_email VARCHAR(255),
-                gender VARCHAR(255))
-        """
-
-        # create_query3 = """
-        #     CREATE TABLE IF NOT EXISTS order_details(
-        #         id SERIAL PRIMARY KEY,
-        #
-        #     )
-        #
-        
-        
-        cursor.execute(create_query1)
-        # logger.info('Creating table books')
-        cursor.execute(create_query2)
-        # logger.info('Creating table readers')
-        print("Tables created successfuly")
-
-        connection.commit()
-        cursor.close()
-        connection.close()
-    except Exception as e:
-        # logger.error("Failed to create tables", exc_info=True)
-        print(f"Error: {e}")
-
-create_table(db_params)
-
-#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# def insert_data(all_books, readers, conn_params):
+#
+# def delete_table(conn_params):
 #     connection = psycopg2.connect(**conn_params)
 #     cursor = connection.cursor()
-#
-#     insert_query1 = """
-#         INSERT INTO books (
-#         author_name,
-#         author_last_name,
-#         book_title,
-#         publish_date,
-#         ISBN,
-#         genre) VALUES (%s, %s, %s, %s, %s, %s)
-#         """
-#     for file in all_books:
-#         # Read the CSV file using pandas
-#         df = pd.read_csv(file)
-#
-#         # Convert the 'publish_date' column to the datetime format
-#         df['publish_date'] = pd.to_datetime(df['publish_date'])
-#
-#
-#         # Loop over the rows in the DataFrame
-#         for index, row in df.iterrows():
-#             author_name = row['author_name']
-#             author_last_name = row['author_last_name']
-#             book_title = row['book_title']
-#             publish_date = row['publish_date'].strftime('%Y-%m-%d')
-#             ISBN = row['ISBN']
-#             genre = row['genre']
-#
-#         cursor.execute(insert_query1, (author_name, author_last_name, book_title, publish_date, ISBN, genre))
-#
-#     insert_query2 = f"""
-#         INSERT INTO readers (
-#         reader_name,
-#         reader_last_name,
-#         reader_category,
-#         birth_date,
-#         reader_email,
-#         gender) VALUES (%s, %s, %s, %s)
+#     delete_query = """
+#         DROP TABLE if EXISTS books
 #     """
-#     for reader in readers:
-#         reader_name = reader['reader_name']
-#         reader_last_name = reader['reader_last_name']
-#         reader_category = reader['reader_category']
-#         birth_date = reader['birth_date']
-#         reader_email = reader['reader_email']
-#         gender = reader['gender']
-#
-#         cursor.execute(insert_query2, (reader_name, reader_last_name, reader_category, birth_date, reader_email, gender))
-#
-#     print("Data for 'books' and 'readers' inserted successfuly")
-#
-#     cursor.execute("SELECT * FROM books LIMIT 5")
-#     logger.info("First few rows from 'books':")
-#     print(cursor.fetchall())
-#
-#     cursor.execute("SELECT * FROM readers LIMIT 5")
-#     logger.info("First few rows from 'readers':")
-#     print(cursor.fetchall())
-#
+#     cursor.execute(delete_query)
+#     print("Tables deleted successfuly")
 #     connection.commit()
 #     cursor.close()
 #     connection.close()
 #
-# # List of CSV files
-# all_books = ["C:/Users/Raminta/Documents/Programavimas su python 2023-12-18/baigiamasis darbas/MOCK_DATA_books1.csv",
-#          "C:/Users/Raminta/Documents/Programavimas su python 2023-12-18/baigiamasis darbas/MOCK_DATA(1)_books2.csv",
-#          "C:/Users/Raminta/Documents/Programavimas su python 2023-12-18/baigiamasis darbas/MOCK_DATA(2)_books3.csv"]
-# readers = "C:/Users/Raminta/Documents/Programavimas su python 2023-12-18/baigiamasis darbas/MOCK_DATA(3)_readers.csv"
+# delete_table(db_params)
+
+# def create_table(conn_params):
+#     try:
+#         connection = psycopg2.connect(**conn_params)
+#         cursor = connection.cursor()
+#         # logger.info('Connecting to the database...')
 #
-# insert_data(all_books, readers, db_params)
+#         create_query1 = """
+#             CREATE TABLE IF NOT EXISTS books2(
+#                 book_id SERIAL PRIMARY KEY,
+#                 author_name VARCHAR(255),
+#                 author_last_name VARCHAR(255),
+#                 book_title VARCHAR(255),
+#                 publish_date DATE,
+#                 ISBN VARCHAR(255),
+#                 genre VARCHAR(255))
+#         """
+
+#         create_query2 = """
+#             CREATE TABLE IF NOT EXISTS readers(
+#                 reader_id SERIAL PRIMARY KEY,
+#                 first_name VARCHAR(255),
+#                 last_name VARCHAR(255),
+#                 email VARCHAR(255),
+#                 gender VARCHAR(255),
+#                 birth_date DATE,
+#                 category VARCHAR(255))
+#         """
+# #
+#         create_query3 = """
+#             CREATE TABLE IF NOT EXISTS orders(
+#                 order_id SERIAL PRIMARY KEY,
+#                 reader_id INTEGER REFERENCES readers(reader_id),
+#                 book_id INTEGER REFERENCES books(book_id),
+#                 date_taken DATE,
+#                 date_returned DATE
+#             )
+#         """
+#
+
+        # cursor.execute(create_query1)
+        # logger.info('Creating table books')
+        # cursor.execute(create_query2)
+        # # logger.info('Creating table readers')
+        # cursor.execute(create_query3)
+        # # logger.info('Creating table orders')
+#
+#         print("Tables created successfuly")
+#
+#         connection.commit()
+#         cursor.close()
+#         connection.close()
+#     except Exception as e:
+#         # logger.error("Failed to create tables", exc_info=True)
+#         print(f"Error: {e}")
+#
+# create_table(db_params)
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# def insert_data_from_csv(conn_params, table_name, csv_file_path):
+#     try:
+#         connection = psycopg2.connect(**conn_params)
+#         cursor = connection.cursor()
+#
+#         with open(csv_file_path, 'r') as file:
+#             reader = csv.reader(file)
+#             next(reader) #skip the header row
+#             for row in reader:
+#                 formatted_row = ', '.join([f"'{item}'" if not item.isdigit() else item for item in row])
+#                 formatted_row = formatted_row.replace("'", "''")
+#                 cursor.execute(f"INSERT INTO {table_name} VALUES ({formatted_row});")
+#
+#         connection.commit()
+#         cursor.close()
+#         connection.close()
+#     except Exception as e:
+#         print(f"Error: {e}")
+#
+#
+# insert_data_from_csv(db_params, 'books', "C:/Users/Raminta/Documents/Programavimas su python 2023-12-18/baigiamasis darbas/books_koreguotas.csv")
+# insert_data_from_csv(db_params, 'readers', "C:/Users/Raminta/Documents/Programavimas su python 2023-12-18/baigiamasis darbas/readers_koreguotas.csv")
+#
+# Connect to your database
+# conn = psycopg2.connect(**db_params)
+
+# # Create a cursor object
+# cur = conn.cursor()
+#
+# # Execute the SQL command
+# # cur.execute("ALTER TABLE orders ADD COLUMN order_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP;")
+# # cur.execute("ALTER TABLE readers ADD COLUMN username TEXT UNIQUE;")
+# # cur.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto;")
+# # cur.execute("ALTER TABLE readers ADD COLUMN password TEXT;")
+#
+#
+# # Commit the changes and close the connection
+# conn.commit()
+# cur.close()
+# conn.close()
+
+
+# duomenys lentelems sukurti naudojant: https://www.mockaroo.com/
