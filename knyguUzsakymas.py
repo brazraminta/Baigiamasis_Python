@@ -12,10 +12,21 @@ conn_params = {
     "port": "5432"
 }
 
-class OrderingBooks(QWidget):
+class HistoryDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Order history")
+        self.history_display = QTextEdit(self)
+        self.history_display.setReadOnly(True)
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.history_display)
+
+
+class OrderingBooks(QDialog):
     def __init__(self):
         super().__init__()
         self.conn_params = conn_params
+        self.order_history = []
         self.initUI()
 
     def initUI(self):
@@ -79,13 +90,7 @@ class OrderingBooks(QWidget):
 
         # uzsakymo patvirtinimo mygtukas
         self.confirm_button = QPushButton("Patvirtinti uzsakyma", self)
-        self.confirm_button.clicked.connect(self.order_confirmation)
-        # self.confirm_button.clicked.connect(self.progress_full)
-
-        # #uzsakymo patvirtinimas
-        # self.confirm_button = QPushButton('Patvirtinti uzsakyma', self)
-        # self.confirm_button.clicked.connect(self.order_confirmation)
-        # # self.confirm_button.clicked.connect(self.progress_full)
+        self.confirm_button.clicked.connect(self.confirm_and_show_history)
         self.button_layout.addWidget(self.confirm_button)
 
         #uzsakymo atsaukimas
@@ -94,6 +99,18 @@ class OrderingBooks(QWidget):
         # self.cancel_button.clicked.connect(self.reset_progress)
         self.button_layout.addWidget(self.cancel_button)
 
+        # uzsakymu istorija
+        self.order_history_button = QPushButton('Uzsakymu istorija', self)
+        self.order_history_button.clicked.connect(self.show_order_info)
+        self.history_dialog = HistoryDialog(self)
+        self.button_layout.addWidget(self.order_history_button)
+
+        self.author_surname_checkbox = QCheckBox("Filtruoti pagal autoriaus pavarde", self)
+        self.date_checkbox = QCheckBox('Filtruoti pagal isleidimo metus', self)
+        self.genre_checkbox = QCheckBox('Filtruoti pagal zanra', self)
+        self.layout.addWidget(self.author_surname_checkbox)
+        self.layout.addWidget(self.date_checkbox)
+        self.layout.addWidget(self.genre_checkbox)
         # self.progress_bar = QProgressBar()
         # self.progress_bar.setFormat('Uzsakymo busena: %p%')
         # self.progress_bar.setValue(0)
@@ -104,33 +121,55 @@ class OrderingBooks(QWidget):
 
 
     def search_books(self):
-        search_term = self.search_field.text()
-        connection = psycopg2.connect(**self.conn_params)
-        cursor = connection.cursor()
+        try:
+            search_term = self.search_field.text()
+            connection = psycopg2.connect(**self.conn_params)
+            cursor = connection.cursor()
 
-        # atrinkti pagal paieskos laukelyje ivedama teksta
-        cursor.execute("SELECT * FROM books2 WHERE book_title ILIKE %s", (f"%{search_term}%",))
+            # atrinkti pagal paieskos laukelyje ivedama teksta
+            query = "SELECT * FROM books2 WHERE book_title ILIKE %s"
+            params = [f"{search_term}%"]
 
-        # fetch all the matching rows
-        results = cursor.fetchall()
-        # print(f"Search results: {results}") # Print the results to the console
-        cursor.close()
-        connection.close()
+            if self.author_surname_checkbox.isChecked():
+                query += " OR author_last_name ILIKE %s"
+                params.append(f"{search_term}%")
+            if self.date_checkbox.isChecked():
+                query += " OR publish_date ILIKE %s"
+                params.append(f"{search_term}%")
+            if self.genre_checkbox.isChecked():
+                query += " OR genre ILIKE %s"
+                params.append(f"{search_term}")
 
-        return results
+            cursor.execute(query, params)
+            # fetch all the matching rows
+            results = cursor.fetchall()
+            # print(f"Search results: {results}") # Print the results to the console
+            cursor.close()
+            connection.close()
+
+            return results
+        except Exception as e:
+            print(f"Error from search_books: {e}")
 
     def display_search_results(self, results):
-        # pirmiausia istrinam QListWIdget
+        # pirmiausia istrinam paieskos rezultatus
         self.search_results.clear()
 
-        # pridedam kiekviena rezultata i QListWidget
-        for book in results:
-            item = QListWidgetItem(str(book[3]))
-            self.search_results.addItem(item)
+        try:
+            # pridedam kiekviena rezultata i QListWidget
+            for book in results:
+                item_text = f"{book[1]} {book[2]}, {book[3]}, {book[4]}, {book[6]}"  # [3] indeksas 'book_title'
+                item = QListWidgetItem(item_text)
+                self.search_results.addItem(item)
+        except Exception as e:
+            print(f"Error from display_search_results: {e}")
 
     def search_button_clicked(self):
-        results = self.search_books()
-        self.display_search_results(results)
+        try:
+            results = self.search_books()
+            self.display_search_results(results)
+        except Exception as e:
+            print(f"Error from search_button_clicked: {e}")
 
     def add_to_cart(self):
         selected_books = self.search_results.selectedItems()
@@ -138,26 +177,41 @@ class OrderingBooks(QWidget):
             self.uzsakymo_krepselis.addItem(book.text())
             self.search_results.takeItem(self.search_results.row(book))
 
+    # def order_confirmation(self):  # kazkodel neveikia connection
+    #     if self.uzsakymo_krepselis.count() == 0:
+    #         QMessageBox.warning(self, 'Klaida', 'Nepridejote nei vienos knygos')
+    #     else:
+    #         for index in range(self.uzsakymo_krepselis.count()):
+    #             book = self.uzsakymo_krepselis.item(index).text()
+    #
+    #             connection = psycopg2.connect(**self.conn_params)
+    #             cursor = connection.cursor()
+    #             cursor.execute(f"INSERT INTO orders(reader_id, book_id, order_time) VALUES ('reader_id', '{book}', CURRENT_TIMESTAMP);")
+    #
+    #             QMessageBox.information(self, 'Information', 'Jusu uzsakymas sekmingai patvirtintas!')
+    #             self.uzsakymo_krepselis.clear()
+    #             # self.update_item_count()
+    #             # self.progress_bar.setValue(100)
+    #             # self.show_order()
+    #
+    #             cursor.close()
+    #             connection.close()
+
     def order_confirmation(self):
-        if self.uzsakymo_krepselis.count() == 0:
-            QMessageBox.warning(self, 'Klaida', 'Nepridejote nei vienos knygos')
-        else:
-            for index in range(self.uzsakymo_krepselis.count()):
-                book = self.uzsakymo_krepselis.item(index).text()
+        try:
+            if self.uzsakymo_krepselis.count() == 0:
+                QMessageBox.warning(self, 'Klaida', 'Nepridejote nei vienos knygos')
+            else:
+                order_info = ""
+                for index in range(self.uzsakymo_krepselis.count()):
+                    book = self.uzsakymo_krepselis.item(index).text()
+                    order_info += f"Book: {book}\n"
 
-                connection = psycopg2.connect(**self.conn_params)
-                cursor = connection.cursor()
-                cursor.execute(f"INSERT INTO orders(reader_id, book_id, order_time) VALUES ('reader_id', '{book}', CURRENT_TIMESTAMP);")
-
-                QMessageBox.information(self, 'Information', 'Jusu uzsakymas sekmingai patvirtintas!')
-                self.uzsakymo_krepselis.clear()
-                # self.update_item_count()
-                # self.progress_bar.setValue(100)
-                # self.show_order()
-
-                cursor.close()
-                connection.close()
-
+                    self.order_history.append(order_info)
+                    QMessageBox.information(self, 'Information', 'Jusu uzsakymas sekmingai patvirtintas!')
+                    # self.uzsakymo_krepselis.clear()
+        except Exception as e:
+            print(f"Error from order_confirmation: {e}")
     # def add_item(self):
     #     item_text = self.item_input.text()
     #     if item_text:
@@ -168,10 +222,49 @@ class OrderingBooks(QWidget):
     #         self.update_item_count()
     #     else:
     #         QMessageBox.warning(self, 'Klaida', 'Irasykite knygos pavadinima')
+    def show_order_info(self):
+        try:
+            if self.uzsakymo_krepselis.count() == 0:
+                QMessageBox.warning(self, "Klaida", "Uzsakymo krepselyje nera nei vienos knygos")
+            else:
+                order_info = ""
+                for index in range(self.uzsakymo_krepselis.count()):
+                    book = self.uzsakymo_krepselis.item(index).text()
+                    order_info += f"Book: {book}\n"
+
+                    #pridedam order_info i order_history list
+                self.order_history.append(order_info)
+
+                QMessageBox.information(self, 'Order Information', order_info)
+        except Exception as e:
+            print(f"Error from show_order_info: {e}")
+
+    def show_order_history(self):
+        try:
+            if len(self.order_history) == 0:
+                QMessageBox.warning(self, "Klaida", "Nėra jokios užsakymo istorijos")
+            else:
+                order_info = "\n".join(f'Order: {order}' for order in self.order_history)
+                self.history_dialog.history_display.setPlainText(order_info)  # Display the history in the QTextEdit widget
+                self.history_dialog.show()
+        except Exception as e:
+            (
+                print(f"Error from show_order_history: {e}"))
+
+    def confirm_and_show_history(self):
+        self.order_confirmation()
+        self.show_order_history()
+
+    def confirm_and_show_history(self):
+        self.order_confirmation()
+        self.show_order_history()
 
     def delete_item(self):
-        for item in self.uzsakymo_krepselis.selectedItems():
-            self.uzsakymo_krepselis.takeItem(self.uzsakymo_krepselis.row(item))
+        try:
+            for item in self.uzsakymo_krepselis.selectedItems():
+                self.uzsakymo_krepselis.takeItem(self.uzsakymo_krepselis.row(item))
+        except Exception as e:
+            print(f"Error: {e}")
 
         # self.update_item_count()
 
@@ -191,14 +284,14 @@ class OrderingBooks(QWidget):
     #         self.show_order()
 
     def order_cancellation(self):
-        connection = psycopg2.connect(**self.conn_params)
-        cursor = connection.cursor()
-
-        # istrinam vartotojo konkrecios datos ir laiko uzsakyma
-        cursor.execute("DELETE FROM orders WHERE reader_id = %s AND order_time = %s", (self.logged_in_user_id, specific_order_time)) #You’ll need to replace specific_order_time with the actual date and time of the order you want to delete
-        connection.commit()
-        cursor.close()
-        connection.close()
+        # connection = psycopg2.connect(**self.conn_params)
+        # cursor = connection.cursor()
+        #
+        # # istrinam vartotojo konkrecios datos ir laiko uzsakyma
+        # cursor.execute("DELETE FROM orders WHERE reader_id = %s AND order_time = %s", (self.logged_in_user_id, specific_order_time)) #You’ll need to replace specific_order_time with the actual date and time of the order you want to delete
+        # connection.commit()
+        # cursor.close()
+        # connection.close()
 
         self.uzsakymo_krepselis.clear()
         QMessageBox.information(self, 'Information', 'Jusu uzsakymas sekmingai atsauktas!')
@@ -222,6 +315,7 @@ class OrderingBooks(QWidget):
     #     QMessageBox.warning(self, 'Warning', 'Uzsakymo busena atstatyta')
     #     self.progress_bar.setValue(0)
 
+
     def update_item_count(self):
         item_count = self.list_widget.count()
         self.item_count_label.setText(f'Pasirinkta knygu: {item_count}')
@@ -235,7 +329,6 @@ class OrderingBooks(QWidget):
     #
     #     self.order_window = OrderWindow(self.order)
     #     self.order_window.show()
-
 
 
 

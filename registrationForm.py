@@ -83,13 +83,20 @@ class RegistrationForm(QDialog):
         # cursor.close()
         # connection.close()
 
-        # print the information on the form
-        msgBox = QMessageBox()
-        msgBox.setWindowTitle("User Inforamtion")
-        msgBox.setText(f"Informacija apie skaitytoja:\nUsername (email): {username}\nName: {name}\nSurname: {surname}\nBirth Date: {birth_date}\nGender: {gender}")
-        msgBox.exec_()
+        # patikrinam, ar visi laukeliai pazymeti
+        if not username or not password or not name or not surname or not birth_date:
+            # print the information on the form
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle("Warning")
+            msgBox.setText("All fields must be filled!")
+            msgBox.exec_()
+        else:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle("User Inforamtion")
+            msgBox.setText(f"Informacija apie skaitytoja:\nUsername (email): {username}\nName: {name}\nSurname: {surname}\nBirth Date: {birth_date}\nGender: {gender}")
+            msgBox.exec_()
 
-        self.close()
+        # self.close()
 
     def creatingForm(self):
         layout = QFormLayout()  # Define the main layout
@@ -115,7 +122,7 @@ class RegistrationForm(QDialog):
         self.formGroupBox.setLayout(layout)
         self.formGroupBox.setStyleSheet("background-color: lightgreen;")
 
-    # def register_login(self, username, password):
+    # #def register_login(self, username, password):
     #     connection = psycopg2.connect(**self.conn_params)
     #     cursor = connection.cursor()
     #

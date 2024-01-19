@@ -4,12 +4,23 @@ from PyQt5.QtGui import QIcon, QKeySequence, QFont
 from PyQt5.QtCore import Qt, QSize, QTimer, QTime, QDate
 from loginForm import LoginForm
 from registrationForm import RegistrationForm
-from knyguPaieska import KnyguPaieska
+from knyguUzsakymas import OrderingBooks
+from knyguUzsakymas import OrderingBooks, HistoryDialog
+
+conn_params = {
+    "host": "localhost",
+    "database": "baigiamasis",  #pakeisti
+    "user": "postgres",
+    "password": "riko789",
+    "port": "5432"
+}
+
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.conn_params = conn_params
 
         self.setWindowTitle("Bibliotekos Inventoriaus Valdymo Sistema")
         self.setGeometry(300, 300, 1200, 750)
@@ -56,7 +67,7 @@ class MainWindow(QMainWindow):
         # self.vLayout.addStretch(1)
 
         self.central_widget.setStyleSheet("background-color: pink;")
-        self.vLayout.addStretch(1)
+        # self.vLayout.addStretch(1)
 
         # sukuriam knygu paieskos (ir detalios) lango nuoroda/mygtuka
         self.search_title = QLabel()
@@ -67,10 +78,12 @@ class MainWindow(QMainWindow):
 
         self.search_button = QPushButton("Knygu paieska ir uzsakymas", self)
         self.search_button.setFixedSize(300, 100)
-        self.search_button.setStyleSheet("background-color: green;")
+        self.search_button.setStyleSheet("background-color: green; font-size: 20px;")
         # self.hLayout.addWidget(self.search_button)
         self.gridLayout.addWidget(self.search_button, 4, 1)
         self.search_button.clicked.connect(self.open_book_search)
+
+        self.book_search = OrderingBooks() # sukuriame 'self.book_search' egzempliorių pagrindinio lango konstruktoriuje, kurį naudosime 'open_book_search' metode.
 
         # # paieskos laukelio centravimo pabaiga
         self.vLayout.addStretch(1)
@@ -87,12 +100,12 @@ class MainWindow(QMainWindow):
         self.pradzia_button.setShortcut(QKeySequence("Ctrl+m"))
         self.toolbar.addAction(self.pradzia_button)
 
-        self.uzsakymas_button = QAction(QIcon("C:/Users/Raminta/PycharmProjects/baigiamasisProjektas/fugue-icons-3.5.6/icons/address-book--plus.png"), "&Knygu uzsakymas", self)
-        self.uzsakymas_button.setStatusTip("Knygu uzsakymas")
-        self.uzsakymas_button.triggered.connect(self.onMyToolBarButtonClick)
-        self.uzsakymas_button.setCheckable(True)
-        self.uzsakymas_button.setShortcut(QKeySequence("Ctrl+o"))
-        self.toolbar.addAction(self.uzsakymas_button)
+        self.uzsakymas_info_button = QAction(QIcon("C:/Users/Raminta/PycharmProjects/baigiamasisProjektas/fugue-icons-3.5.6/icons/address-book--plus.png"), "&Knygu uzsakymas", self)
+        self.uzsakymas_info_button.setStatusTip("Perziureti uzsakyma")
+        self.uzsakymas_info_button.triggered.connect(self.onMyToolBarButtonClick)
+        self.uzsakymas_info_button.setCheckable(True)
+        self.uzsakymas_info_button.setShortcut(QKeySequence("Ctrl+o"))
+        self.toolbar.addAction(self.uzsakymas_info_button)
 
         self.toolbar.addSeparator()
 
@@ -128,13 +141,6 @@ class MainWindow(QMainWindow):
         self.request_button.setCheckable(True)
         self.request_button.setShortcut(QKeySequence("Ctrl+u"))
         self.toolbar.addAction(self.request_button)
-        #
-        # # pridedam dialogo langa
-        # self.dialog_button = QPushButton("Press me for a dialog!")
-        # self.dialog_button.setFixedSize(150, 30)
-        # self.dialog_button.setStyleSheet("background-color: yellow;")
-        # self.gridLayout.addWidget(self.dialog_button, 0, 0)
-        # self.dialog_button.clicked.connect(self.button_clicked)
 
         # pridedam prisijungimo ir registracijos mygtukus
         self.login_button = QPushButton('Prisijungti prie paskyros', self)
@@ -156,7 +162,7 @@ class MainWindow(QMainWindow):
         menu = self.menuBar()
 
         file_menu = menu.addMenu("&File")
-        file_menu.addAction(self.uzsakymas_button)
+        file_menu.addAction(self.uzsakymas_info_button)
 
         file_menu.addSeparator()
 
@@ -186,22 +192,21 @@ class MainWindow(QMainWindow):
         self.registration_form.show()
 
     def open_book_search(self):
-        self.book_search = KnyguPaieska()
-        self.book_search.setModal(True)
-        self.book_search.show()
-
+        try:
+            self.book_search.setModal(True)
+            self.book_search.show()
+        except Exception as e:
+            print(f"Error: {e}")
 
     def showTime(self):
         current_time = QTime.currentTime()
         time_text = current_time.toString('hh:mm:ss')
         self.timer_label.setText(time_text)
 
-
     def showDate(self):
         current_date = QDate.currentDate()
         date_text = current_date.toString('yyyy.MM.dd')
         self.date_label.setText(date_text)
-
 
 # class CustomDialog(QDialog):
 #     def __init__(self, parent=None):
@@ -220,8 +225,6 @@ class MainWindow(QMainWindow):
 #         self.layout.addWidget(message)
 #         self.layout.addWidget(self.buttonBox)
 #         self.setLayout(self.layout)
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
