@@ -1,26 +1,23 @@
 Bibliotekos Inventoriaus Valdymo Sistema:
-Padeda bibliotekos darbuotojams ir lankytojams efektyviai tvarkyti ir naudotis knygų inventoriumi.
+Knygų paieška duomenų bazėje, įdėjimas į krepšelį, išėmimas iš krepšelio, užsakymo peržiūrėjimas ir išsiuntimas. Skirtingi langai - pagrindinis langas ir vartotojo.
 
-Pagrindinės Funkcijos:
+Pagrindinės funkcijos ir išvaizda:
+
+    Programos langai:
+    - Pagrindinis langas: knygų paieškos laukelis ir filtrai (leidimo metai, autorius, žanras), vartotojo registracijos ir prisijungimo mygtukai, įrankių juosta su mygtukais (DUK, užklausos siuntimas darbuotojui), datos ir        laiko rodymas.
+    - Skaitytojo langas: vartotojo pasveikinimas prisijungus, datos ir laiko rodymas, knygų paieškos ir užsakymo mygtukas, atidarantis naują langą, kuriame - leidinio paieška, filtrai, rikiavimas, filtrų ir paieškos               rezultatų išvalymo mygtukai, knygų įdėjimas į / išėmimas iš krepšelio, užsakymo peržiūra, krepšelio išvalymas.
+
+    Vartotojų registracija ir prisijungimas:
+    - Naujo vartotojo registracija.
+    - Prisijungimas (su galimybe užsiregistruoti, jeigu dar nėra užsiregistravęs).
+
     Knygų Paieška:
-        Vartotojai gali ieškoti knygų bibliotekos duomenų bazėje pagal pavadinimą, autorių, išleidimo datą ir žanrą.
-        Galimybė peržiūrėti knygos informaciją, pavyzdžiui, leidimo metus, žanrą, apimtį dar nepridėta.
-
-    Knygų Išdavimas ir Grąžinimas:
-        Funkcionalumas, leidžiantis fiksuoti knygų išdavimo ir grąžinimo datas (kol kas dar nepavyko dėl problemų su duomenų baze).
-        Automatinis priminimas apie artėjančią grąžinimo datą (nespėta padaryti).
-
-    Vartotojų Valdymas:
-        Bibliotekos darbuotojas gali registruoti naujus skaitytojus, peržiūrėti užsakymų istoriją, grąžinimų datas.
-        Taip pat gali nustatyti vartotojų kategorijas (pvz., studentai, mokytojai).
-
-    Ataskaitų Generavimas: (kol kas nepadaryta)
-        Automatinių ataskaitų generavimas apie knygų išdavimą, grąžinimą, vartotojų aktyvumą.
-        Galimybė eksportuoti ataskaitas įvairiais formatais, pvz., PDF, Excel.
+    - Vartotojai gali ieškoti knygų bibliotekos duomenų bazėje pagal pavadinimą, autorių, išleidimo datą ir žanrą.
+    - Rezultatai rodomi lentelėje, kur vartotojas gali pasirinkti norimus leidinius ir įsidėti į krepšelį, išimti iš jo, peržiūrėti, išvalyti krepšelį, išsiųsti užsakymą darbuotoojui.
 
 Techniniai Aspektai:
-    Naudotojo sąsajai sukurti naudotas PyQt5. Tai apima meniu, mygtukus, tekstinius laukus, lentas ir kitas sąsajos komponentes.
-    Duomenų bazės integracija: Sukurta Postgresql duomenų bazė knygų, vartotojų ir užsakymų informacijai saugoti.
-    Kodo struktūra: naudotas objektinio programavimo (OOP) principai.
-    Duomenys duomenų bazės lentelėms sukurti naudojantis internetine svetaine: https://www.mockaroo.com/
+    - Naudotojo sąsajai sukurti naudotas PyQt5. Tai apima meniu, mygtukus, tekstinius laukus, lenteles ir kitas sąsajos komponentes.
+    - Duomenų bazės integracija: Sukurta PostgreSQL duomenų bazė knygų, vartotojų ir užsakymų informacijai saugoti.
+    - Kodo struktūra: naudoti objektinio programavimo (OOP) principai.
+    - Duomenys knygų ir vartotojų duomenų bazės lentelėms sukurti naudojantis internetine svetaine: https://www.mockaroo.com/
 
